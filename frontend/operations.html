@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HospitalSync - Operations Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        .incident-feed { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.5rem; }
+        .incident-item { padding: 1rem; border-left: 4px solid var(--primary); background: rgba(255,255,255,0.8); border-radius: 6px; box-shadow: var(--shadow); font-size: 0.875rem; display: flex; align-items: flex-start; gap: 0.75rem;}
+        .incident-time { font-weight: 600; color: var(--text-muted); font-size: 0.75rem; white-space: nowrap; }
+        .heatmap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .heatmap-card { padding: 1.5rem; border-radius: 8px; color: white; text-align: center; font-weight: bold; box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
+        .heatmap-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .heatmap-yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .heatmap-red { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+        .transfer-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.875rem; }
+        .transfer-table th { text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border); color: var(--text-muted); }
+        .transfer-table td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        .badge-status { padding: 0.25rem 0.5rem; border-radius: 12px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .badge-pending { background: #fef3c7; color: #b45309; }
+        .badge-transit { background: #e0f2fe; color: #0369a1; }
+        .badge-completed { background: #d1fae5; color: #047857; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="warning-banner" class="warning-banner">🚨 DISASTER MODE ACTIVE 🚨</div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <span class="icon">🏥</span>
+            <h1>HospitalSync</h1>
+            <span class="badge" style="background:var(--primary)">Ops</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="ambulance.html">Ambulance Tracking</a>
+            <a href="operations.html" class="active">Operations Center</a>
+            <a href="reports.html">Reports</a>
+        </div>
+        <div class="user-profile">
+            <span>Ops Commander</span>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <header class="dashboard-header">
+            <h2>Operations Control Center</h2>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="status-indicator">
+                    <span class="dot green"></span>
+                    <span>Network Active</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- KPI Metrics -->
+        <section class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1.5rem;">
+            <div class="card metric-card">
+                <div class="metric-card-header">
+                    <div>
+                        <h3>Avg Response Time</h3>
+                        <p class="subtitle">City Limits</p>
+                    </div>
+                    <span class="metric-icon">⏱</span>
+                </div>
+                <div class="metric-value">8.4 <span style="font-size:1rem; font-weight:normal;">mins</span></div>
+            </div>
+            <div class="card metric-card">
+                <div class="metric-card-header">
+                    <div>
+                        <h3>Avg Patient Wait</h3>
+                        <p class="subtitle">Emergency Rooms</p>
+                    </div>
+                    <span class="metric-icon">⏳</span>
+                </div>
+                <div class="metric-value">12.2 <span style="font-size:1rem; font-weight:normal;">mins</span></div>
+            </div>
+            <div class="card metric-card">
+                <div class="metric-card-header">
+                    <div>
+                        <h3>Ambulance Efficiency</h3>
+                        <p class="subtitle">Utilization Rate</p>
+                    </div>
+                    <span class="metric-icon">📈</span>
+                </div>
+                <div class="metric-value">92%</div>
+            </div>
+            <div class="card metric-card">
+                <div class="metric-card-header">
+                    <div>
+                        <h3>Daily Cases</h3>
+                        <p class="subtitle">Handled Today</p>
+                    </div>
+                    <span class="metric-icon">📋</span>
+                </div>
+                <div class="metric-value">1,245</div>
+            </div>
+        </section>
+
+        <section class="main-content" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+            <!-- Left Column -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Heatmap -->
+                <div class="card">
+                    <h3>Hospital Load Heatmap (Mumbai Region)</h3>
+                    <p class="subtitle" style="margin-bottom: 1rem;">Live occupancy visualization</p>
+                    <div class="heatmap-grid" id="heatmap-container">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Transfer Tracking -->
+                <div class="card">
+                    <h3>Active Patient Transfers</h3>
+                    <table class="transfer-table">
+                        <thead>
+                            <tr>
+                                <th>Transfer ID</th>
+                                <th>Source</th>
+                                <th>Destination</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transfer-tbody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="card" style="height: fit-content;">
+                <h3>Live Incident Feed</h3>
+                <p class="subtitle" style="margin-bottom: 1rem;">Real-time network events</p>
+                <div class="incident-feed" id="incident-feed">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/operations.js"></script>
+</body>
+</html>

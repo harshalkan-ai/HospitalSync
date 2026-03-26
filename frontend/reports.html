@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HospitalSync - Reports & Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        .report-section { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem; }
+        .chart-container { display: flex; flex-direction: column; gap: 0.5rem; }
+        
+        /* CSS Bar Chart */
+        .bar-chart { display: flex; align-items: flex-end; gap: 0.5rem; height: 150px; padding-top: 1rem; border-bottom: 2px solid var(--border); margin-bottom: 0.5rem; }
+        .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+        .bar-fill { width: 100%; background: linear-gradient(135deg, var(--primary), #3b82f6); border-radius: 4px 4px 0 0; transition: height 0.5s ease; position: relative; }
+        .bar-fill:hover { opacity: 0.8; }
+        .bar-value { position: absolute; top: -20px; font-size: 0.75rem; font-weight: bold; width: 100%; text-align: center; }
+        .bar-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-top: 0.25rem; }
+        
+        /* Peak Hours Heatmap */
+        .peak-hours-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: 1rem; }
+        .hour-box { height: 30px; border-radius: 4px; }
+        .bg-low { background: #e0f2fe; }
+        .bg-med { background: #60a5fa; }
+        .bg-high { background: #1e3a8a; }
+        .hour-label { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="warning-banner" class="warning-banner">🚨 DISASTER MODE ACTIVE 🚨</div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <span class="icon">🏥</span>
+            <h1>HospitalSync</h1>
+            <span class="badge" style="background:#8b5cf6">Reports</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="ambulance.html">Ambulance Tracking</a>
+            <a href="operations.html">Operations Center</a>
+            <a href="reports.html" class="active">Reports</a>
+        </div>
+        <div class="user-profile">
+            <span>Admin</span>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <header class="dashboard-header">
+            <h2>Analytics & Reporting Engine</h2>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button class="btn btn-primary" onclick="window.print()">Export PDF</button>
+            </div>
+        </header>
+
+        <section class="report-section" style="grid-template-columns: 1fr 1fr; display: grid;">
+            <!-- Daily Trends -->
+            <div class="card">
+                <h3>Daily Patient Admissions</h3>
+                <p class="subtitle" style="margin-bottom: 2rem;">Last 7 Days Trend Analysis</p>
+                <div class="chart-container">
+                    <div class="bar-chart" id="daily-chart">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ICU Usage -->
+            <div class="card">
+                <h3>ICU Usage Capacity Trends</h3>
+                <p class="subtitle" style="margin-bottom: 2rem;">Last 7 Days ICU Utilization (%)</p>
+                <div class="chart-container">
+                    <div class="bar-chart" id="icu-chart">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Peak Hours -->
+            <div class="card" style="grid-column: span 2;">
+                <h3>Peak Hours Analysis</h3>
+                <p class="subtitle">Patient influx density over a 24-hour cycle (Darker = Busiest)</p>
+                
+                <h4 style="margin-top: 1rem; font-size: 0.9rem;">AM Shift (00:00 - 11:59)</h4>
+                <div class="peak-hours-grid" id="am-hours">
+                    <!-- Filled by JS -->
+                </div>
+                
+                <h4 style="margin-top: 1rem; font-size: 0.9rem;">PM Shift (12:00 - 23:59)</h4>
+                <div class="peak-hours-grid" id="pm-hours">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/reports.js"></script>
+</body>
+</html>

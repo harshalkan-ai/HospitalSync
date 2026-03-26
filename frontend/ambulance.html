@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HospitalSync - Ambulance Unit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+</head>
+<body class="ambulance-mode">
+    <div id="toast-container"></div>
+    <nav class="navbar dark-nav">
+        <div class="logo">
+            <span class="icon">🚑</span>
+            <h1>Ambulance Unit AMB-102</h1>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="ambulance.html" class="active">Ambulance Tracking</a>
+            <a href="operations.html">Operations Center</a>
+            <a href="reports.html">Reports</a>
+        </div>
+    </nav>
+
+    <main class="dashboard ambulance-dashboard">
+        <section class="map-simulation card">
+            <div class="map-overlay">
+                <h3>Navigation & Routing</h3>
+                <p>Simulated live tracking</p>
+            </div>
+            <!-- Simulated graphical element for map -->
+            <div class="simulated-map">
+                <div class="map-grid"></div>
+                <div class="map-marker ambulance-marker" id="amb-marker">🚑</div>
+                <div class="map-marker hospital-marker green" id="hosp-1" style="top:20%; left:80%">🏥 City Gen</div>
+                <div class="map-marker hospital-marker yellow" id="hosp-2" style="top:70%; left:40%">🏥 Metro</div>
+            </div>
+            
+            <div class="routing-controls">
+                <button id="btn-find-hospital" class="btn btn-primary">Find Nearest Safe Hospital</button>
+            </div>
+        </section>
+
+        <section class="hospital-options card">
+            <h3>Available Destinations</h3>
+            <div class="options-list" id="hospital-options">
+                <!-- Dynamically populated from API -->
+                <p>Click "Find Nearest Safe Hospital" to calculate routes.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/ambulance.js"></script>
+</body>
+</html>
